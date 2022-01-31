@@ -22,9 +22,11 @@ class Home extends CI_Controller {
 
         $this->secure_prefix = 'PID3459s';
         if (ENVIRONMENT == 'development') {
-            $this->input->cookie("m{$this->secure_prefix}") ? true : redirect('http://localhost/ci_auth');
+            $this->cookie_value = $this->input->cookie("m{$this->secure_prefix}");
+            $this->cookie_value ? true : redirect('http://localhost/ci_auth');
         } else {
-            $this->input->cookie("__Secure-{$this->secure_prefix}") ? true : redirect('https://dhonstudio.com/ci/auth');
+            $this->cookie_value = $this->input->cookie("__Secure-{$this->secure_prefix}");
+            $this->cookie_value ? true : redirect('https://dhonstudio.com/ci/auth');
         }
 	}
 
@@ -41,6 +43,8 @@ class Home extends CI_Controller {
                 $this->js['bootstrap-bundle5'],
                 $this->js['sb-admin'],
             ],
+
+            'user'          => $this->dhonapi->get('project', 'user', ['id' => $this->encryption->decrypt($this->cookie_value)])[0]
         ];
 
         $this->load->view('ci_templates/header', $data);

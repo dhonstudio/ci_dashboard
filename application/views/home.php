@@ -93,7 +93,7 @@
                                     <img src="<?= base_url('assets/img/blank_card.png') ?>">
                                     <div class="card_identity">
                                         <b class="h5">543-001</b><br>
-                                        <b class="h5">Dhoni Rama</b>
+                                        <b class="h5"><?= $user['fullName'] ?></b>
                                     </div>
                                     <div class="card_qrcode">
                                         <img src="<?= base_url('home/qrcode/543001') ?>">
@@ -101,12 +101,18 @@
                                 </div>
                             </div>
                             <div class="col-xl-8">
-                                <div class="card mb-4">
-                                    <div class="card-header">
-                                        <i class="fas fa-chart-bar me-1"></i>
-                                        Bar Chart Example
+                                <div class="card mb-4 shadow p-3 bg-white rounded">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-3">
+                                                <img src="<?= base_url('assets/img/no_photo.png') ?>" width="100px">
+                                            </div>
+                                            <div class="col-9">
+                                                <text class="h4"><?= $user['fullName'] ?></text><br>
+                                                543-001
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
                                 </div>
                             </div>
                         </div>
