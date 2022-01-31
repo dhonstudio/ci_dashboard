@@ -43,4 +43,11 @@ class Home extends CI_Controller {
         $this->load->view('ci_templates/footer');
         $this->load->view('ci_templates/end');
     }
+
+    public function qrcode($id)
+    {
+        include(__DIR__.'/../../assets/vendor/phpqrcode/qrlib.php');
+
+		QRcode::png($id);
+    }
 }
