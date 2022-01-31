@@ -19,6 +19,13 @@ class Home extends CI_Controller {
         $this->dhonapi->password = 'admin';
 
         $this->lang = 'en';
+
+        $this->secure_prefix = 'PID3459s';
+        if (ENVIRONMENT == 'development') {
+            $this->input->cookie("m{$this->secure_prefix}") ? true : redirect('http://localhost/ci_auth');
+        } else {
+            $this->input->cookie("__Secure-{$this->secure_prefix}") ? true : redirect('https://dhonstudio.com/ci/auth');
+        }
 	}
 
 	public function index()
@@ -37,6 +44,7 @@ class Home extends CI_Controller {
         ];
 
         $this->load->view('ci_templates/header', $data);
+        $this->load->view('templates/topbar');
         $this->load->view('home');
         $this->load->view('copyright');
         $this->load->view('ci_templates/toast');
@@ -49,5 +57,12 @@ class Home extends CI_Controller {
         include(__DIR__.'/../../assets/vendor/phpqrcode/qrlib.php');
 
 		QRcode::png($id);
+    }
+
+    public function logout()
+    {
+        ENVIRONMENT == 'development' ? delete_cookie("m{$this->secure_prefix}") : delete_cookie("__Secure-{$this->secure_prefix}");
+
+        redirect();
     }
 }
