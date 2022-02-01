@@ -20,19 +20,31 @@ class Home extends CI_Controller {
 
         $this->lang = 'en';
 
-        $this->secure_prefix = 'PID3459s';
         if (ENVIRONMENT == 'development') {
-            $this->cookie_value = $this->input->cookie("m{$this->secure_prefix}");
-            $this->cookie_value ? true : redirect('http://localhost/ci_auth');
+            $this->cookie_prefix    = 'm';
+            $this->auth_redirect    = 'http://localhost/ci_auth';
         } else {
-            $this->cookie_value = $this->input->cookie("__Secure-{$this->secure_prefix}");
-            $this->cookie_value ? true : redirect('https://dhonstudio.com/ci/auth');
+            $this->cookie_prefix    = '__Secure-';
+            $this->auth_redirect    = 'https://dhonstudio.com/ci/auth';
         }
+        $this->secure_prefix    = 'PID3459s';
+        $this->secure_auth      = "{$this->secure_prefix}A";
+        if (!$this->input->cookie("{$this->cookie_prefix}{$this->secure_auth}") || !$this->input->cookie("{$this->cookie_prefix}{$this->secure_prefix}")) redirect($this->auth_redirect);
 	}
 
 	public function index()
 	{
-        $data = [
+        $this->load->library('encryption');
+        $auth_key   = $this->encryption->decrypt($this->input->cookie("{$this->cookie_prefix}{$this->secure_auth}"));
+        $this->encryption->initialize(
+            array(
+                'cipher' => 'aes-256',
+                'mode' => 'ctr',
+                'key' => $auth_key
+            )
+        );
+        $id     = $this->encryption->decrypt($this->input->cookie("{$this->cookie_prefix}{$this->secure_prefix}"));
+        $data   = [
             'title'         => 'SB Admin - Dashboard',
             'css'           => [
                 $this->css['sb-admin'],
@@ -44,7 +56,7 @@ class Home extends CI_Controller {
                 $this->js['sb-admin'],
             ],
 
-            'user'          => $this->dhonapi->get('project', 'user', ['id' => $this->encryption->decrypt($this->cookie_value)])[0]
+            'user'          => $this->dhonapi->get('project', 'user_ci', ['id' => $id])[0]
         ];
 
         $this->load->view('ci_templates/header', $data);
@@ -65,7 +77,13 @@ class Home extends CI_Controller {
 
     public function logout()
     {
-        ENVIRONMENT == 'development' ? delete_cookie("m{$this->secure_prefix}") : delete_cookie("__Secure-{$this->secure_prefix}");
+        if (ENVIRONMENT == 'development') {
+            delete_cookie("m{$this->secure_prefix}");
+            delete_cookie("m{$this->secure_prefix}A");
+        } else {
+            delete_cookie("__Secure-{$this->secure_prefix}");
+            delete_cookie("__Secure-{$this->secure_prefix}A");
+        }
 
         redirect();
     }

@@ -104,12 +104,14 @@
                                 <div class="card mb-4 shadow p-3 bg-white rounded">
                                     <div class="card-body">
                                         <div class="row">
-                                            <div class="col-3">
+                                            <div class="col">
                                                 <img src="<?= base_url('assets/img/no_photo.png') ?>" width="100px">
                                             </div>
-                                            <div class="col-9">
+                                            <div class="col-6">
                                                 <text class="h4"><?= $user['fullName'] ?></text><br>
                                                 543-001
+                                            </div>
+                                            <div class="col">
                                             </div>
                                         </div>
                                     </div>
