@@ -7,7 +7,7 @@
 
     .card_qrcode {
         position: absolute;
-        top: 50%;
+        top: 30%;
         right: 12%;
     }
 </style>
