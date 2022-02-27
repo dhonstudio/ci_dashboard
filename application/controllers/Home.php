@@ -66,6 +66,7 @@ class Home extends CI_Controller {
         );
         $id         = $this->encryption->decrypt($this->input->cookie("{$this->cookie_prefix}{$this->secure_prefix}"));
         $this->user = $this->dhonapi->get($this->database, $this->table, ['id' => $id])[0];
+        if ($this->uri->segment(2) != 'create_password' && !$this->user['password_hash']) redirect('home/create_password');
 
         $this->language['active'] = 'en';
 	}
@@ -91,6 +92,44 @@ class Home extends CI_Controller {
         $this->load->view('home');
         $this->load->view('copyright');
         $this->load->view('ci_templates/end');
+    }
+
+    public function create_password()
+	{
+        $this->load->library('form_validation');
+
+        $this->form_validation->set_rules('password', 'Password', 'required|trim|min_length[3]|max_length[20]');
+        $this->form_validation->set_rules('repeat_password', 'Repeat Password', 'required|trim|matches[password]');
+
+        if($this->form_validation->run() == false) {
+            $data   = [
+                'title'         => 'SB Admin - Dashboard',
+                'css'           => [
+                    $this->css['sb-admin'],
+                    $this->css['fontawesome5'],
+                ],
+                'js'            => [
+                    $this->js['bootstrap-bundle5'],
+                    $this->js['sb-admin'],
+                ],
+                'body_class'    => 'sb-nav-fixed',
+            ];
+
+            $this->load->view('ci_templates/header', $data);
+            $this->load->view('templates/topbar');
+            $this->load->view('templates/sidebar');
+            $this->load->view('create_password');
+            $this->load->view('copyright');
+            $this->load->view('ci_templates/end');
+        } else {
+            $this->dhonapi->post($this->database, $this->table, [
+                'password_hash' => password_hash($this->input->post('password'), PASSWORD_DEFAULT),
+                'modified_at'   => time(),
+                'id'            => $this->user['id'],
+            ]);
+
+            redirect('home');
+        }
     }
 
     public function qrcode($id)

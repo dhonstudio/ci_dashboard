@@ -35,7 +35,7 @@ $config['base_url'] = ENVIRONMENT == 'development' ? 'http://localhost/ci_dashbo
 | variable so that it is blank.
 |
 */
-$config['index_page'] = 'index.php';
+$config['index_page'] = '';
 
 /*
 |--------------------------------------------------------------------------
