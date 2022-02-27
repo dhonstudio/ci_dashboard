@@ -132,6 +132,47 @@ class Home extends CI_Controller {
         }
     }
 
+    public function change_password()
+	{
+        $this->load->library('form_validation');
+
+        $this->form_validation->set_rules('old_password', 'Current Password', 'required|trim');
+        $this->form_validation->set_rules('password', 'New Password', 'required|trim|min_length[3]|max_length[20]');
+        $this->form_validation->set_rules('repeat_password', 'Repeat New Password', 'required|trim|matches[password]');
+
+        if($this->form_validation->run() == false) {
+            $data   = [
+                'title'         => 'SB Admin - Dashboard',
+                'css'           => [
+                    $this->css['sb-admin'],
+                    $this->css['fontawesome5'],
+                ],
+                'js'            => [
+                    $this->js['bootstrap-bundle5'],
+                    $this->js['sb-admin'],
+                ],
+                'body_class'    => 'sb-nav-fixed',
+            ];
+
+            $this->load->view('ci_templates/header', $data);
+            $this->load->view('templates/topbar');
+            $this->load->view('templates/sidebar');
+            $this->load->view('change_password');
+            $this->load->view('copyright');
+            $this->load->view('ci_templates/end');
+        } else {
+            if (password_verify($this->input->post('old_password'), $this->user['password_hash'])) {
+                $this->dhonapi->post($this->database, $this->table, [
+                    'password_hash' => password_hash($this->input->post('password'), PASSWORD_DEFAULT),
+                    'modified_at'   => time(),
+                    'id'            => $this->user['id'],
+                ]);
+
+                redirect('home');
+            }
+        }
+    }
+
     public function qrcode($id)
     {
         include(__DIR__.'/../../assets/vendor/phpqrcode/qrlib.php');
