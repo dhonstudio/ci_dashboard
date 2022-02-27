@@ -18,7 +18,7 @@
                                         <div class="row">
                                             <div class="col">
                                                 <img src="
-                                                    <?= $this->user['google_picture'] ? $this->user['google_picture'] : base_url('assets/img/no_photo.png') ?>
+                                                    <?= $this->user['google_picture'] ? $this->user['google_picture'] : ($this->user['fb_picture'] ? $this->user['fb_picture'] : base_url('assets/img/no_photo.png')) ?>
                                                 " width="100px">
                                             </div>
                                             <div class="col-6">
