@@ -69,6 +69,26 @@ class Home extends CI_Controller {
         if ($this->uri->segment(2) != 'create_password' && !$this->user['password_hash']) redirect('home/create_password');
 
         $this->language['active'] = 'en';
+
+        $this->toasts = [
+            [
+                'id'        => 'create_pw_success',
+                'title'     => 'Success',
+                'message'   => 'Create password success'
+            ],
+            [
+                'id'        => 'change_pw_success',
+                'title'     => 'Success',
+                'message'   => 'Change password cuccess'
+            ],
+            [
+                'id'        => 'change_pw_failed',
+                'title'     => 'Failed',
+                'message'   => 'Change password failed, please try again'
+            ],
+        ];
+
+        $this->toast_id = isset($_POST['status']) ? $_POST['status'] : '';
 	}
 
 	public function index()
@@ -80,6 +100,7 @@ class Home extends CI_Controller {
                 $this->css['fontawesome5'],
             ],
             'js'            => [
+                $this->js['jquery36'],
                 $this->js['bootstrap-bundle5'],
                 $this->js['sb-admin'],
             ],
@@ -91,6 +112,8 @@ class Home extends CI_Controller {
         $this->load->view('templates/sidebar');
         $this->load->view('home');
         $this->load->view('copyright');
+        $this->load->view('ci_templates/toast', ['toasts' => $this->toasts, 'custom_class' => 'position-fixed top-0 mt-5 end-0 p-3']);
+        $this->load->view('ci_scripts/toast_show', ['toast_id' => $this->toast_id]);
         $this->load->view('ci_templates/end');
     }
 
@@ -128,7 +151,7 @@ class Home extends CI_Controller {
                 'id'            => $this->user['id'],
             ]);
 
-            redirect('home');
+            redirect('home/redirect_post?action=home&post_name1=status&post_value1=create_pw_success');
         }
     }
 
@@ -136,9 +159,11 @@ class Home extends CI_Controller {
 	{
         $this->load->library('form_validation');
 
-        $this->form_validation->set_rules('old_password', 'Current Password', 'required|trim');
-        $this->form_validation->set_rules('password', 'New Password', 'required|trim|min_length[3]|max_length[20]');
-        $this->form_validation->set_rules('repeat_password', 'Repeat New Password', 'required|trim|matches[password]');
+        if (!isset($_POST['status'])) {
+            $this->form_validation->set_rules('old_password', 'Current Password', 'required|trim');
+            $this->form_validation->set_rules('password', 'New Password', 'required|trim|min_length[3]|max_length[20]');
+            $this->form_validation->set_rules('repeat_password', 'Repeat New Password', 'required|trim|matches[password]');
+        }
 
         if($this->form_validation->run() == false) {
             $data   = [
@@ -148,6 +173,7 @@ class Home extends CI_Controller {
                     $this->css['fontawesome5'],
                 ],
                 'js'            => [
+                    $this->js['jquery36'],
                     $this->js['bootstrap-bundle5'],
                     $this->js['sb-admin'],
                 ],
@@ -159,6 +185,8 @@ class Home extends CI_Controller {
             $this->load->view('templates/sidebar');
             $this->load->view('change_password');
             $this->load->view('copyright');
+            $this->load->view('ci_templates/toast', ['toasts' => $this->toasts, 'custom_class' => 'position-fixed top-0 mt-5 end-0 p-3']);
+            $this->load->view('ci_scripts/toast_show', ['toast_id' => $this->toast_id]);    
             $this->load->view('ci_templates/end');
         } else {
             if (password_verify($this->input->post('old_password'), $this->user['password_hash'])) {
@@ -168,7 +196,9 @@ class Home extends CI_Controller {
                     'id'            => $this->user['id'],
                 ]);
 
-                redirect('home');
+                redirect('home/redirect_post?action=home&post_name1=status&post_value1=change_pw_success');
+            } else {
+                redirect('home/redirect_post?action=home/change_password&post_name1=status&post_value1=change_pw_failed');
             }
         }
     }
@@ -186,5 +216,26 @@ class Home extends CI_Controller {
         delete_cookie("{$this->cookie_prefix}{$this->secure_prefix}");
 
         redirect();
+    }
+
+    public function redirect_post()
+    {
+        $data = [
+            'action'        => $_GET['action'],
+        ];
+
+        $posts = [
+            [
+                'post_name1'    => $_GET['post_name1'],
+                'post_value1'   => $_GET['post_value1'],
+            ],
+        ];
+        for ($i=2; $i <= 10; $i++) { 
+            if (isset($_GET['post_name'.$i])) $posts[$i-1]['post_name'.$i] = $_GET['post_name'.$i];
+            if (isset($_GET['post_value'.$i])) $posts[$i-1]['post_value'.$i] = $_GET['post_value'.$i];
+        }
+        $data['posts'] = $posts;
+
+        $this->load->view('ci_templates/redirect_post', $data);
     }
 }
