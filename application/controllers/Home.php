@@ -11,6 +11,7 @@ class Home extends CI_Controller {
 
         require_once __DIR__ . '/../../assets/ci_helpers/global_helper.php';
         require_once __DIR__ . '/../../assets/ci_helpers/style_helper.php';
+        require_once __DIR__ . '/../../assets/ci_helpers/urlencryptor_helper.php';
         require_once __DIR__ . '/../../assets/ci_libraries/DhonAPI.php';
         $this->dhonapi = new DhonAPI;
 
@@ -57,25 +58,40 @@ class Home extends CI_Controller {
         $this->secure_auth      = "DSA250222k";
         
         $this->load->helper('cookie');
-        if (!$this->input->cookie("{$this->cookie_prefix}{$this->secure_auth}") || !$this->input->cookie("{$this->cookie_prefix}{$this->secure_prefix}")) redirect($this->auth_redirect);
-        
-        /*
-        | -------------------------------------------------------------------
-        |  Don't forget to set up encryption key
-        | -------------------------------------------------------------------
-        */
-        $this->load->library('encryption');
+        if ($this->input->cookie("{$this->cookie_prefix}{$this->secure_auth}") && $this->input->cookie("{$this->cookie_prefix}{$this->secure_prefix}")) {
+            /*
+            | -------------------------------------------------------------------
+            |  Don't forget to set up encryption key
+            | -------------------------------------------------------------------
+            */
+            $this->load->library('encryption');
 
-        $auth_key   = $this->encryption->decrypt($this->input->cookie("{$this->cookie_prefix}{$this->secure_auth}"));
-        $this->encryption->initialize(
-            array(
-                'cipher' => 'aes-256',
-                'mode' => 'ctr',
-                'key' => $auth_key
-            )
-        );
-        $id         = $this->encryption->decrypt($this->input->cookie("{$this->cookie_prefix}{$this->secure_prefix}"));
-        $this->user = $this->dhonapi->get($this->database, $this->table, ['id' => $id])[0];
+            $auth_key   = $this->encryption->decrypt($this->input->cookie("{$this->cookie_prefix}{$this->secure_auth}"));
+            $this->encryption->initialize(
+                array(
+                    'cipher' => 'aes-256',
+                    'mode' => 'ctr',
+                    'key' => $auth_key
+                )
+            );
+            $id         = $this->encryption->decrypt($this->input->cookie("{$this->cookie_prefix}{$this->secure_prefix}"));
+            $this->user = $this->dhonapi->get($this->database, $this->table, ['id' => $id])[0];
+
+            /*
+            | -------------------------------------------------------------------
+            |  Device manager
+            | -------------------------------------------------------------------
+            */
+            $device     = $this->dhonapi->get($this->database, $this->table_devices);
+            $device_key = array_search(htmlentities($_SERVER['HTTP_USER_AGENT']), array_column($device, 'htmlentities'));
+            $device_av  = !empty($device) ? ($device_key > -1 ? $device[$device_key] : 0) : 0;
+            $id_device  = $device_av === 0 ? $this->dhonapi->post($this->database, $this->table_devices, ['htmlentities' => htmlentities($_SERVER['HTTP_USER_AGENT'])])['id_device'] : $device_av['id_device'];
+            if (empty($this->dhonapi->get($this->database, $this->table_u_devices, ['id_user' => $this->user['id'], 'id_device' => $id_device])))
+                $this->logout();
+        } else {
+            redirect($this->auth_redirect);
+        }        
+        
         if ($this->uri->segment(2) != 'create_password' && !$this->user['password_hash']) redirect('home/create_password');
 
         $this->language['active'] = 'en';
@@ -95,6 +111,11 @@ class Home extends CI_Controller {
                 'id'        => 'change_pw_failed',
                 'title'     => 'Failed',
                 'message'   => 'Change password failed, please try again'
+            ],
+            [
+                'id'        => 'delete_dv_success',
+                'title'     => 'Success',
+                'message'   => 'Device successfully deleted and logged out'
             ],
         ];
 
@@ -215,49 +236,59 @@ class Home extends CI_Controller {
         }
     }
 
-    public function device_activity()
+    public function device_activity($id_e = '')
     {
-        $data   = [
-            'title'         => 'SB Admin - Device Activity',
-            'css'           => [
-                $this->css['sb-admin'],
-                $this->css['fontawesome5'],
-                $this->css['bootstrap5'],
-            ],
-            'js'            => [
-                $this->js['jquery36'],
-                $this->js['bootstrap-bundle5'],
-                $this->js['sb-admin'],
-            ],
-            'body_class'    => 'sb-nav-fixed',
+        if ($id_e) {
+            $id = decrypt_url($id_e);
 
-            'devices'       => $this->dhonapi->get($this->database, $this->table_u_devices, ['id_user' => $this->user['id']]),
-        ];
+            $this->dhonapi->delete($this->database, $this->table_u_devices, $id);
 
-        function get_device_name($id)
-        {
-            $ci = get_instance();
+            redirect('home/redirect_post?action=home/device_activity&post_name1=status&post_value1=delete_dv_success');
+        } else {
+            $data   = [
+                'title'         => 'SB Admin - Device Activity',
+                'css'           => [
+                    $this->css['sb-admin'],
+                    $this->css['fontawesome5'],
+                    $this->css['bootstrap5'],
+                ],
+                'js'            => [
+                    $this->js['jquery36'],
+                    $this->js['bootstrap-bundle5'],
+                    $this->js['sb-admin'],
+                ],
+                'body_class'    => 'sb-nav-fixed',
 
-            $htmlentities = $ci->dhonapi->get($ci->database, $ci->table_devices, ['id_device' => $id])[0];
-            return $htmlentities['device_name'] ? $htmlentities['device_name'] : explode(';', get_word_between($htmlentities['htmlentities'], '(', ')'))[0];
+                'devices'       => $this->dhonapi->get($this->database, $this->table_u_devices, ['id_user' => $this->user['id'], 'sort_by' => 'last_login', 'sort_method' => 'desc']),
+            ];
+
+            function get_device_name($id)
+            {
+                $ci = get_instance();
+
+                $htmlentities   = $ci->dhonapi->get($ci->database, $ci->table_devices, ['id_device' => $id])[0];
+                $device_name    = $htmlentities['device_name'] ? $htmlentities['device_name'] : explode(';', get_word_between($htmlentities['htmlentities'], '(', ')'))[0];
+                $current        = $htmlentities['htmlentities'] == htmlentities($_SERVER['HTTP_USER_AGENT']) ? '<b>(current)</b>' : '';
+                return ['name' => $device_name.' '.$current, 'current' => $current];
+            }
+
+            function get_location($id)
+            {
+                $ci = get_instance();
+
+                $ip_info = $ci->dhonapi->get($ci->database, $ci->table_addresses, ['id_address' => $id])[0]['ip_info'];
+                return json_decode($ip_info)->status == 'success' ? json_decode($ip_info)->city.', '.json_decode($ip_info)->country : 'localhost';
+            }
+
+            $this->load->view('ci_templates/header', $data);
+            $this->load->view('templates/topbar');
+            $this->load->view('templates/sidebar');
+            $this->load->view('device_activity');
+            $this->load->view('copyright');
+            $this->load->view('ci_templates/toast', ['toasts' => $this->toasts, 'custom_class' => 'position-fixed top-0 mt-5 end-0 p-3']);
+            $this->load->view('ci_scripts/toast_show', ['toast_id' => $this->toast_id]);    
+            $this->load->view('ci_templates/end');
         }
-
-        function get_location($id)
-        {
-            $ci = get_instance();
-
-            $ip_info = $ci->dhonapi->get($ci->database, $ci->table_addresses, ['id_address' => $id])[0]['ip_info'];
-            return json_decode($ip_info)->status == 'success' ? json_decode($ip_info)->city.', '.json_decode($ip_info)->country : 'localhost';
-        }
-
-        $this->load->view('ci_templates/header', $data);
-        $this->load->view('templates/topbar');
-        $this->load->view('templates/sidebar');
-        $this->load->view('device_activity');
-        $this->load->view('copyright');
-        $this->load->view('ci_templates/toast', ['toasts' => $this->toasts, 'custom_class' => 'position-fixed top-0 mt-5 end-0 p-3']);
-        $this->load->view('ci_scripts/toast_show', ['toast_id' => $this->toast_id]);    
-        $this->load->view('ci_templates/end');
     }
 
     public function qrcode($id)
