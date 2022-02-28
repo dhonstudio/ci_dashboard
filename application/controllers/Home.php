@@ -9,6 +9,7 @@ class Home extends CI_Controller {
 	{
 		parent::__construct();
 
+        require_once __DIR__ . '/../../assets/ci_helpers/global_helper.php';
         require_once __DIR__ . '/../../assets/ci_helpers/style_helper.php';
         require_once __DIR__ . '/../../assets/ci_libraries/DhonAPI.php';
         $this->dhonapi = new DhonAPI;
@@ -30,6 +31,15 @@ class Home extends CI_Controller {
         */
         $this->database         = 'project';
         $this->table            = 'user_ci';
+
+        /*
+        | -------------------------------------------------------------------
+        |  Set up this if there is device manager
+        | -------------------------------------------------------------------
+        */
+        $this->table_devices    = 'devices';
+        $this->table_addresses  = 'addresses';
+        $this->table_u_devices  = 'user_device';
         
         /*
         | -------------------------------------------------------------------
@@ -119,6 +129,8 @@ class Home extends CI_Controller {
 
     public function create_password()
 	{
+        if ($this->user['password_hash']) redirect('home');
+
         $this->load->library('form_validation');
 
         $this->form_validation->set_rules('password', 'Password', 'required|trim|min_length[3]|max_length[20]');
@@ -126,7 +138,7 @@ class Home extends CI_Controller {
 
         if($this->form_validation->run() == false) {
             $data   = [
-                'title'         => 'SB Admin - Dashboard',
+                'title'         => 'SB Admin - Create Password',
                 'css'           => [
                     $this->css['sb-admin'],
                     $this->css['fontawesome5'],
@@ -167,7 +179,7 @@ class Home extends CI_Controller {
 
         if($this->form_validation->run() == false) {
             $data   = [
-                'title'         => 'SB Admin - Dashboard',
+                'title'         => 'SB Admin - Change Password',
                 'css'           => [
                     $this->css['sb-admin'],
                     $this->css['fontawesome5'],
@@ -201,6 +213,51 @@ class Home extends CI_Controller {
                 redirect('home/redirect_post?action=home/change_password&post_name1=status&post_value1=change_pw_failed');
             }
         }
+    }
+
+    public function device_activity()
+    {
+        $data   = [
+            'title'         => 'SB Admin - Device Activity',
+            'css'           => [
+                $this->css['sb-admin'],
+                $this->css['fontawesome5'],
+                $this->css['bootstrap5'],
+            ],
+            'js'            => [
+                $this->js['jquery36'],
+                $this->js['bootstrap-bundle5'],
+                $this->js['sb-admin'],
+            ],
+            'body_class'    => 'sb-nav-fixed',
+
+            'devices'       => $this->dhonapi->get($this->database, $this->table_u_devices, ['id_user' => $this->user['id']]),
+        ];
+
+        function get_device_name($id)
+        {
+            $ci = get_instance();
+
+            $htmlentities = $ci->dhonapi->get($ci->database, $ci->table_devices, ['id_device' => $id])[0];
+            return $htmlentities['device_name'] ? $htmlentities['device_name'] : explode(';', get_word_between($htmlentities['htmlentities'], '(', ')'))[0];
+        }
+
+        function get_location($id)
+        {
+            $ci = get_instance();
+
+            $ip_info = $ci->dhonapi->get($ci->database, $ci->table_addresses, ['id_address' => $id])[0]['ip_info'];
+            return json_decode($ip_info)->status == 'success' ? json_decode($ip_info)->city.', '.json_decode($ip_info)->country : 'localhost';
+        }
+
+        $this->load->view('ci_templates/header', $data);
+        $this->load->view('templates/topbar');
+        $this->load->view('templates/sidebar');
+        $this->load->view('device_activity');
+        $this->load->view('copyright');
+        $this->load->view('ci_templates/toast', ['toasts' => $this->toasts, 'custom_class' => 'position-fixed top-0 mt-5 end-0 p-3']);
+        $this->load->view('ci_scripts/toast_show', ['toast_id' => $this->toast_id]);    
+        $this->load->view('ci_templates/end');
     }
 
     public function qrcode($id)
