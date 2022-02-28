@@ -1,65 +1,136 @@
+<?php
+    $pages = [
+        [
+            'heading'       => 'Core',
+            'subheading'    => [
+                [
+                    'title' => 'Dashboard',
+                    'url'   => '',
+                    'icon'  => 'fas fa-tachometer-alt'
+                ],
+            ],
+        ],
+        [
+            'heading'       => 'Interface',
+            'subheading'    => [
+                [
+                    'title'     => 'Layouts',
+                    'url'       => '#',
+                    'icon'      => 'fas fa-columns',
+                    'subtitle'  => [
+                        [
+                            'title' => 'Static Navigation',
+                            'url'   => 'layout-static.html'
+                        ],
+                        [
+                            'title' => 'Light Sidenav',
+                            'url'   => 'layout-sidenav-light.html'
+                        ],
+                    ]
+                ],
+                [
+                    'title'     => 'Pages',
+                    'url'       => '#',
+                    'icon'      => 'fas fa-book-open',
+                    'subtitle'  => [
+                        [
+                            'title'     => 'Authentication',
+                            'url'       => '#',
+                            'subpage'   => [
+                                [
+                                    'title' => 'Login',
+                                    'url'   => 'login.html'
+                                ],
+                                [
+                                    'title' => 'Register',
+                                    'url'   => 'register.html'
+                                ],
+                                [
+                                    'title' => 'Forgot Password',
+                                    'url'   => 'password.html'
+                                ],
+                            ]
+                        ],
+                        [
+                            'title'     => 'Error',
+                            'url'       => '#',
+                            'subpage'   => [
+                                [
+                                    'title' => '401 Page',
+                                    'url'   => '401.html'
+                                ],
+                                [
+                                    'title' => '404 Page',
+                                    'url'   => '404.html'
+                                ],
+                                [
+                                    'title' => '500 Page',
+                                    'url'   => '500.html'
+                                ],
+                            ]
+                        ],
+                    ]
+                ],
+            ],
+        ],
+        [
+            'heading'       => 'Addons',
+            'subheading'    => [
+                [
+                    'title'     => 'Charts',
+                    'url'       => 'charts.html',
+                    'icon'      => 'fas fa-chart-area',
+                ],
+                [
+                    'title'     => 'Tables',
+                    'url'       => 'tables.html',
+                    'icon'      => 'fas fa-table',
+                ],
+            ],
+        ],
+    ]
+?>
+
         <div id="layoutSidenav">
             <div id="layoutSidenav_nav">
                 <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                     <div class="sb-sidenav-menu">
                         <div class="nav">
-                            <div class="sb-sidenav-menu-heading">Core</div>
-                            <a class="nav-link <?= $this->uri->segment(2) == '' || $this->uri->segment(2) == 'index' ? 'active' : '' ?>" href="<?= base_url('') ?>">
-                                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                                Dashboard
-                            </a>
-                            <div class="sb-sidenav-menu-heading">Interface</div>
-                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                                Layouts
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="layout-static.html">Static Navigation</a>
-                                    <a class="nav-link" href="layout-sidenav-light.html">Light Sidenav</a>
-                                </nav>
-                            </div>
-                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
-                                <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
-                                Pages
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
-                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
-                                        Authentication
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            <?php foreach ($pages as $kp => $p) :?>
+                                <div class="sb-sidenav-menu-heading"><?= $p['heading'] ?></div>
+                                <?php foreach ($p['subheading'] as $kps => $ps) :?>
+                                    <a class="nav-link 
+                                    <?= isset($ps['subtitle']) ? 'collapsed' : (isset($page) && $page == $ps['title'] ? 'active' : '') ?>" href="<?= base_url($ps['url']) ?>" 
+                                    <?= isset($ps['subtitle']) ? 'data-bs-toggle="collapse" data-bs-target="#collapse'.$ps['title'].'" aria-expanded="false" aria-controls="collapse'.$ps['title'].'"' : '' ?>>
+                                        <div class="sb-nav-link-icon"><i class="<?= $ps['icon']?>"></i></div>
+                                        <?= $ps['title'] ?>
+                                        <?= isset($ps['subtitle']) ? '<div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>' : ''?>
                                     </a>
-                                    <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="login.html">Login</a>
-                                            <a class="nav-link" href="register.html">Register</a>
-                                            <a class="nav-link" href="password.html">Forgot Password</a>
-                                        </nav>
-                                    </div>
-                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
-                                        Error
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                                    </a>
-                                    <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="401.html">401 Page</a>
-                                            <a class="nav-link" href="404.html">404 Page</a>
-                                            <a class="nav-link" href="500.html">500 Page</a>
-                                        </nav>
-                                    </div>
-                                </nav>
-                            </div>
-                            <div class="sb-sidenav-menu-heading">Addons</div>
-                            <a class="nav-link" href="charts.html">
-                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                Charts
-                            </a>
-                            <a class="nav-link" href="tables.html">
-                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                Tables
-                            </a>
+                                    <?php if (isset($ps['subtitle'])):?>
+                                        <div class="collapse" id="collapse<?= $ps['title'] ?>" aria-labelledby="heading<?= $kps ?>" data-bs-parent="#sidenavAccordion">
+                                            <nav class="sb-sidenav-menu-nested nav">
+                                                <?php foreach ($ps['subtitle'] as $kst => $st) :?>
+                                                    <a class="nav-link 
+                                                    <?= isset($st['subpage']) ? 'collapsed' : ''?>" href="<?= $st['url'] ?>"
+                                                    <?= isset($st['subpage']) ? 'data-bs-toggle="collapse" data-bs-target="#'.$ps['title'] .'Collapse'.$st['title'].'" aria-expanded="false" aria-controls="'.$ps['title'] .'Collapse'.$st['title'].'"' : ''?>>
+                                                        <?= $st['title'] ?>
+                                                        <?= isset($st['subpage']) ? '<div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>' : ''?>
+                                                    </a>
+                                                    <?php if (isset($st['subpage'])):?>
+                                                        <div class="collapse" id="<?= $ps['title'] .'Collapse'.$st['title'] ?>" aria-labelledby="heading<?= $kst ?>" data-bs-parent="#sidenavAccordion<?= $ps['title']?>">
+                                                            <nav class="sb-sidenav-menu-nested nav">
+                                                                <?php foreach ($st['subpage'] as $ksp => $sp) :?>
+                                                                    <a class="nav-link" href="<?= $sp['url'] ?>"><?= $sp['title'] ?></a>
+                                                                <?php endforeach?>
+                                                            </nav>
+                                                        </div>
+                                                    <?php endif?>
+                                                <?php endforeach?>
+                                            </nav>
+                                        </div>
+                                    <?php endif?>
+                                <?php endforeach?>
+                            <?php endforeach?>
                         </div>
                     </div>
                     <div class="sb-sidenav-footer">

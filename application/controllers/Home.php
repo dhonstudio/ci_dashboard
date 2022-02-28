@@ -136,6 +136,7 @@ class Home extends CI_Controller {
                 $this->js['sb-admin'],
             ],
             'body_class'    => 'sb-nav-fixed',
+            'page'          => 'Dashboard',
         ];
 
         $this->load->view('ci_templates/header', $data);
