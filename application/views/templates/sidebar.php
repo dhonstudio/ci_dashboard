@@ -1,12 +1,27 @@
 <?php
     $pages = [
         [
-            'heading'       => 'Core',
+            'heading'       => '',
             'subheading'    => [
                 [
                     'title' => 'Dashboard',
                     'url'   => '',
                     'icon'  => 'fas fa-tachometer-alt'
+                ],
+            ],
+        ],
+        [
+            'heading'       => 'Addons',
+            'subheading'    => [
+                [
+                    'title'     => 'Charts',
+                    'url'       => 'home/dashboard_charts',
+                    'icon'      => 'fas fa-chart-area',
+                ],
+                [
+                    'title'     => 'Tables',
+                    'url'       => 'tables.html',
+                    'icon'      => 'fas fa-table',
                 ],
             ],
         ],
@@ -73,21 +88,7 @@
                 ],
             ],
         ],
-        [
-            'heading'       => 'Addons',
-            'subheading'    => [
-                [
-                    'title'     => 'Charts',
-                    'url'       => 'charts.html',
-                    'icon'      => 'fas fa-chart-area',
-                ],
-                [
-                    'title'     => 'Tables',
-                    'url'       => 'tables.html',
-                    'icon'      => 'fas fa-table',
-                ],
-            ],
-        ],
+        
     ]
 ?>
 

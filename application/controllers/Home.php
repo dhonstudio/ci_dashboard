@@ -143,7 +143,43 @@ class Home extends CI_Controller {
         $this->load->view('templates/topbar');
         $this->load->view('templates/sidebar');
         $this->load->view('home');
-        $this->load->view('copyright');
+        $this->load->view('elements/copyright');
+        $this->load->view('ci_templates/toast', ['toasts' => $this->toasts, 'custom_class' => 'position-fixed top-0 mt-5 end-0 p-3']);
+        $this->load->view('ci_scripts/toast_show', ['toast_id' => $this->toast_id]);
+        $this->load->view('ci_templates/end');
+    }
+
+    public function qrcode($id)
+    {
+        include(__DIR__.'/../../assets/vendor/phpqrcode/qrlib.php');
+
+		QRcode::png($id);
+    }
+
+    public function dashboard_charts()
+    {
+        $data   = [
+            'title'         => 'SB Admin - Dashboard',
+            'css'           => [
+                $this->css['sb-admin'],
+                $this->css['fontawesome5'],
+            ],
+            'js'            => [
+                $this->js['jquery36'],
+                $this->js['bootstrap-bundle5'],
+                $this->js['sb-admin'],
+                $this->js['chart28'],
+            ],
+            'body_class'    => 'sb-nav-fixed',
+            'page'          => 'Dashboard',
+        ];
+
+        $this->load->view('ci_templates/header', $data);
+        $this->load->view('templates/topbar');
+        $this->load->view('templates/sidebar');
+        $this->load->view('dashboard_charts');
+        $this->load->view('elements/copyright');
+        $this->load->view('elements/charts/area');
         $this->load->view('ci_templates/toast', ['toasts' => $this->toasts, 'custom_class' => 'position-fixed top-0 mt-5 end-0 p-3']);
         $this->load->view('ci_scripts/toast_show', ['toast_id' => $this->toast_id]);
         $this->load->view('ci_templates/end');
@@ -176,7 +212,7 @@ class Home extends CI_Controller {
             $this->load->view('templates/topbar');
             $this->load->view('templates/sidebar');
             $this->load->view('create_password');
-            $this->load->view('copyright');
+            $this->load->view('elements/copyright');
             $this->load->view('ci_templates/end');
         } else {
             $this->dhonapi->post($this->database, $this->table, [
@@ -218,7 +254,7 @@ class Home extends CI_Controller {
             $this->load->view('templates/topbar');
             $this->load->view('templates/sidebar');
             $this->load->view('change_password');
-            $this->load->view('copyright');
+            $this->load->view('elements/copyright');
             $this->load->view('ci_templates/toast', ['toasts' => $this->toasts, 'custom_class' => 'position-fixed top-0 mt-5 end-0 p-3']);
             $this->load->view('ci_scripts/toast_show', ['toast_id' => $this->toast_id]);    
             $this->load->view('ci_templates/end');
@@ -285,18 +321,11 @@ class Home extends CI_Controller {
             $this->load->view('templates/topbar');
             $this->load->view('templates/sidebar');
             $this->load->view('device_activity');
-            $this->load->view('copyright');
+            $this->load->view('elements/copyright');
             $this->load->view('ci_templates/toast', ['toasts' => $this->toasts, 'custom_class' => 'position-fixed top-0 mt-5 end-0 p-3']);
             $this->load->view('ci_scripts/toast_show', ['toast_id' => $this->toast_id]);    
             $this->load->view('ci_templates/end');
         }
-    }
-
-    public function qrcode($id)
-    {
-        include(__DIR__.'/../../assets/vendor/phpqrcode/qrlib.php');
-
-		QRcode::png($id);
     }
 
     public function logout()

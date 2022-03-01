@@ -1,4 +1,6 @@
 assets
+!assets/ci_helpers/*
+!assets/ci_libraries/*
 .vscode
 
 .DS_Store
