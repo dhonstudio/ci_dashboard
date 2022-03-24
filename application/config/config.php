@@ -23,7 +23,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = ENVIRONMENT == 'development' ? 'http://localhost/ci_dashboard/' : 'https://dhonstudio.com/ci/dashboard/';
+$config['base_url'] = 
+    ENVIRONMENT == 'development' ? 'http://localhost/ci_dashboard/' : 
+    (ENVIRONMENT == 'testing' ? 'http://dev.dhonstudio.com/ci/dashboard/' : 'https://dhonstudio.com/ci/dashboard/');
 
 /*
 |--------------------------------------------------------------------------
